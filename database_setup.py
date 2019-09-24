@@ -23,7 +23,7 @@ class City(Base):
 class Place(Base):
     __tablename__ = 'place'
 
-	name =Column(String(80), nullable = False)
+    name =Column(String(80), nullable = False)
     id = Column(Integer, primary_key = True)
     description = Column(String(250))
     city_id = Column(Integer,ForeignKey('city.id'))

@@ -1,7 +1,7 @@
 from flask import Flask, render_template, request, redirect, jsonify, url_for, flash
 from sqlalchemy import create_engine, asc
 from sqlalchemy.orm import sessionmaker
-from database_setup import User
+from database_setup import User, City, Place
 from flask import session as login_session
 import random
 import string
@@ -21,36 +21,36 @@ session = DBSession()
 
 @app.route('/cities')
 def ShowCities():
-	return "This Page will list all the cities"
+	return render_template('cities.html')
 
 @app.route('/city/new')
 def newCity():
-	return "This Page will be for making a new city"
+	return render_template('newCity.html')
 
 @app.route('/city/<int:city_id>/edit')
 def editCity(city_id):
-	return "This Page will be for editing city %s" % city_id
+	return render_template('editCity.html', city_id=city_id)
 
 @app.route('/city/<int:city_id>/delete')
 def deleteCity(city_id):
-	return "This Page will be for deleting city %s" % city_id
+	return render_template('deleteCity.html', city_id=city_id)
 
 @app.route('/city/<int:city_id>/')
 @app.route('/city/<int:city_id>/places')
 def ShowPlaces(city_id):
-	return "This Page will list all the the places for the city %s" % city_id
+	return render_template('places.html', city_id=city_id)
 
 @app.route('/city/<int:city_id>/place/new')
 def newPlace(city_id):
-	return "This Page will be for making a new place for city %s" % city_id
+	return render_template('newPlace.html', city_id=city_id)
 
 @app.route('/city/<int:city_id>/<int:place_id>/edit')
 def eidtPlace(city_id, place_id):
-	return "This Page will be for editing place %s" % place_id
+	return render_template('editPlace.html', city_id=city_id, place_id = place_id)
 
 @app.route('/city/<int:city_id>/<int:place_id>/delete')
 def deletePlace(city_id, place_id):
-	return "This Page will be for deleting place %s" % place_id
+	return render_template('deletePlace.html', city_id=city_id, place_id = place_id)
 
 
 if __name__ == '__main__':
