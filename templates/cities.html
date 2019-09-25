@@ -5,5 +5,10 @@
 </head>
 <body>
 <h1>List all cities</h1>
+<div>
+	{% for city in cities %}
+	<h3>{{ city.name }}</h3>
+	{% endfor %}
+</div>
 </body>
 </html>

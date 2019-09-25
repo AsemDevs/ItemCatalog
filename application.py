@@ -11,6 +11,7 @@ import httplib2
 import json
 from flask import make_response
 import requests
+from cities_db import cities, places
 
 app = Flask(__name__)
 engine = create_engine('sqlite:///citiescatalog.db')
@@ -21,7 +22,7 @@ session = DBSession()
 
 @app.route('/cities')
 def ShowCities():
-	return render_template('cities.html')
+	return render_template('cities.html', cities=cities)
 
 @app.route('/city/new')
 def newCity():
