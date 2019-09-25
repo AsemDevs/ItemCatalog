@@ -19,6 +19,8 @@ class City(Base):
 
     id = Column(Integer, primary_key=True)
     name = Column(String(250), nullable=False)
+    user_id = Column(Integer, ForeignKey('user.id'))
+    user = relationship(User)
 
 class Place(Base):
     __tablename__ = 'place'
@@ -28,5 +30,7 @@ class Place(Base):
     description = Column(String(250))
     city_id = Column(Integer,ForeignKey('city.id'))
     city = relationship(City) 
+    user_id = Column(Integer, ForeignKey('user.id'))
+    user = relationship(User)
 
 Base.metadata.create_all(engine)
