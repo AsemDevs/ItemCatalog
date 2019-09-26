@@ -22,14 +22,37 @@ user1 = User(name="Jhon Doe", email="jhondoe@demo.com",
 session.add(user1)
 session.commit()
 
-city1 = City(name="Kansas City", user=user1)
+city1 = City(name="Mecca", user=user1)
 
 session.add(city1)
 session.commit()
 
-place1 = Place(name="Victoria", description="Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Curabitur",city=city1, user=user1)
+place1 = Place(name="Grand Mosque (Haram)", description="The grand mosque of Makkah commonly known as Masjid al-Haram is the largest mosque in the world surrounded by the holiest places of Islam. Muslims around the world pray in the direction of Grand Mosque, 5 times a day",city=city1, user=user1)
 
 session.add(place1)
+session.commit()
+
+city2 = City(name="Cairo", user=user1)
+
+session.add(city2)
+session.commit()
+
+place21 = Place(name="Al-Azhar Mosque", description="Al-Azhar Mosque is the finest building of Cairo's Fatimid era and one of the city's earliest surviving mosques, completed in AD 972.",city=city2, user=user1)
+place22= Place(name="The Egyptian Museum", description="The absolutely staggering collection of antiquities displayed in Cairo's Egyptian Museum makes it one of the world's great museums. You would need a lifetime to see everything on show.",city=city2, user=user1)
+
+session.add(place21)
+session.add(place22)
+
+session.commit()
+
+city3 = City(name="Dubai", user=user1)
+
+session.add(city3)
+session.commit()
+
+place3 = Place(name="Burj Khalifa", description="Dubai's landmark building is the Burj Khalifa, which at 829.8 meters is the tallest building in the world and the most famous of the city's points of interest",city=city3, user=user1)
+
+session.add(place3)
 session.commit()
 
 print('Finished populating the database!')

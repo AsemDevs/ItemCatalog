@@ -1,16 +1,42 @@
-<!DOCTYPE html>
-<html>
-<head>
-	<title></title>
-</head>
-<body>
-<h1>List all cities</h1>
-<div>
-	{% for city in cities %}
-	<h3>{{ city.name }}</h3>
-	<h4>{{ city.id }}</h4>
+{% extends "main.html" %}
+{% block content %}
+{% include "header.html" %}
+	<div class="row top-menu">
+		<div class="col-md-10"></div>
+		<div class="col-md-2 text-right">
+					</div>
+	</div>
+	<div class="row divider blue">
+		<div class="col-md-12"></div>
+	</div>
+	<div class="row banner main">
+		<div class="col-md-1"></div>
+		<div class="col-md-11 padding-none">
+			<h1>City</h1>
+		</div>
+	</div>
 
+	
+	<div class="row padding-top padding-bottom">
+		<div class="col-md-1"></div>
+		<div class="col-md-10 padding-none">
+			<a href="{{url_for('newCity')}}">
+				<button class="btn btn-default" id="new-restaurant">
+					<span class="fas fa-city" aria-hidden="true"></span>Add City
+				</button>
+			</a>
+		</div>
+		<div class="col-md-1"></div>
+	</div>
+	{% for city in cities %}
+		<a href = "{{url_for('showPlaces', city_id = city.id)}}">
+			<div class="row">
+				<div class="col-md-1"></div>
+					<div class="col-md-10 restaurant-list">
+						<h3>{{city.name}}</h3>
+					</div>
+				<div class="col-md-1"></div>
+			</div>
+		</a>
 	{% endfor %}
-</div>
-</body>
-</html>
+{% endblock %}

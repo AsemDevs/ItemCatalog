@@ -34,33 +34,74 @@ def newCity():
 	else:
 		return render_template('newCity.html')
 
-@app.route('/city/<int:city_id>/edit')
+@app.route('/city/<int:city_id>/edit', methods=['GET', 'POST'])
 def editCity(city_id):
-	return render_template('editCity.html', cities=cities, city=city, city_id=city_id)
+	editedCity = session.query(City).filter_by(id=city_id).one()
+	if request.method == 'POST':
+		if request.form['name']:
+			editedCity.name = request.form['name']
+			session.add(editedCity)
+			session.commit()
+			return redirect(url_for('showCities'))
+	else:
+		return render_template('editCity.html', city=editedCity)
 
-@app.route('/city/<int:city_id>/delete')
+
+@app.route('/city/<int:city_id>/delete', methods=['GET', 'POST'])
 def deleteCity(city_id):
-	return render_template('deleteCity.html', city_id=city_id)
+	deletedCity = session.query(City).filter_by(id=city_id).one()
+	if request.method == 'POST':
+		session.delete(deletedCity)
+		session.commit()
+		return redirect(url_for('showCities', city_id=city_id))
+	else:
+		return render_template('deleteCity.html', city=deletedCity)
 
 @app.route('/city/<int:city_id>/')
 @app.route('/city/<int:city_id>/places')
-def ShowPlaces(city_id):
-	return render_template('places.html', city_id=city_id)
+def showPlaces(city_id):
+	city = session.query(City).filter_by(id=city_id).one()
+	places = session.query(Place).filter_by(city_id=city_id).all()
+	return render_template('places.html', places=places, city=city,city_id=city_id)
 
-@app.route('/city/<int:city_id>/place/new')
+@app.route('/city/<int:city_id>/place/new', methods=['GET', 'POST'])
 def newPlace(city_id):
-	return render_template('newPlace.html', city_id=city_id)
+	city = session.query(City).filter_by(id=city_id).one()
+	if request.method == 'POST':
+		newPlace = Place(name=request.form['name'], description=request.form['description'], city_id=city_id, user_id=city.user_id)
+		session.add(newPlace)
+		session.commit()
+		return redirect(url_for('showPlace', city_id=city_id))
+	else:
+		return render_template('newPlace.html', city_id=city_id)
 
-@app.route('/city/<int:city_id>/<int:place_id>/edit')
+@app.route('/city/<int:city_id>/<int:place_id>/edit', methods=['GET', 'POST'])
 def eidtPlace(city_id, place_id):
-	return render_template('editPlace.html', city_id=city_id, place_id = place_id)
+	editedCity = session.query(City).filter_by(id=city_id).one()
+	editedPlace = session.query(Place).filter_by(id=place_id).one()
+	if request.method == 'POST':
+		if request.form['name']:
+			editedPlace.name = request.form['name']
+		if request.form['description']:
+			editedPlace.description = request.form['description']
+		session.add(editedPlace)
+		session.commit()
+		return redirect(url_for('showCities'))
+	else:
+		return render_template('editPlace.html', city_id=city_id, place_id = place_id, place=editedPlace)
 
-@app.route('/city/<int:city_id>/<int:place_id>/delete')
+@app.route('/city/<int:city_id>/<int:place_id>/delete', methods=['GET', 'POST'])
 def deletePlace(city_id, place_id):
-	return render_template('deletePlace.html', city_id=city_id, place_id = place_id)
+	city = session.query(City).filter_by(id=city_id).one()
+	deletedPlace = session.query(Place).filter_by(id=place_id).one()
+	if request.method == 'POST':
+		session.delete(deletedPlace)
+		session.commit()
+		return redirect(url_for('showCities', city_id=city_id))
+	else:
+		return render_template('deletePlace.html', city_id=city_id, place_id = place_id, place = deletedPlace )
 
 
 if __name__ == '__main__':
-    app.secret_key = 'super_secret_key'
     app.debug = True
     app.run(host='0.0.0.0', port=7000)
