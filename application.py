@@ -24,9 +24,15 @@ def showCities():
 	cities = session.query(City).all()
 	return render_template('cities.html', cities=cities)
 
-@app.route('/city/new')
+@app.route('/city/new', methods=['GET', 'POST'])
 def newCity():
-	return render_template('newCity.html')
+	if request.method == 'POST':
+		newCity = City(name=request.form['name'])
+		session.add(newCity)
+		session.commit()
+		return redirect(url_for('showCities'))
+	else:
+		return render_template('newCity.html')
 
 @app.route('/city/<int:city_id>/edit')
 def editCity(city_id):
