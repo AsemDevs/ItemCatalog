@@ -22,6 +22,17 @@ class City(Base):
     user_id = Column(Integer, ForeignKey('user.id'))
     user = relationship(User)
 
+    @property
+
+    def serialize(self):
+
+        """Return object data in easily serializeable format"""
+
+        return {
+            'name': self.name,
+            'id': self.id
+        }
+
 
 class Place(Base):
     __tablename__ = 'place'
@@ -33,7 +44,19 @@ class Place(Base):
     city = relationship(City)
     user_id = Column(Integer, ForeignKey('user.id'))
     user = relationship(User)
- 
+
+    @property
+
+
+    def serialize(self):
+        """Return object data in easily serializeable format"""
+        return {
+            'name': self.name,
+            'description': self.description,
+            'id': self.id
+        }
+
+
 engine = create_engine('sqlite:///citiescatalog.db')
 
 Base.metadata.create_all(engine)

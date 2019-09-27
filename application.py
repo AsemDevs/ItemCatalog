@@ -13,10 +13,32 @@ from flask import make_response
 import requests
 
 app = Flask(__name__)
+
+# Connect to Database and create database session
 engine = create_engine('sqlite:///citiescatalog.db')
 
 DBSession = sessionmaker(bind=engine)
 session = DBSession()
+
+# JSON APIs to view Restaurant Information
+
+@app.route('/city/<int:city_id>/place/JSON')
+def showPlacesJSON(city_id):
+    city = session.query(City).filter_by(id=city_id).one()
+    places = session.query(Place).filter_by(
+        city_id=city_id).all()
+    return jsonify(places=[i.serialize for i in places])
+
+@app.route('/city/<int:city_id>/place/<int:place_id>/JSON')
+def PlaceJSON(city_id, place_id):
+    place = session.query(Place).filter_by(id=place_id).one()
+    return jsonify(place=place.serialize)
+
+@app.route('/city/JSON')
+def showCitiesJSON():
+    city = session.query(City).all()
+    return jsonify(city=[c.serialize for c in city])
+
 
 
 @app.route('/cities')
