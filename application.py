@@ -122,6 +122,43 @@ def gconnect():
     flash("you are now logged in as %s" % login_session['username'])
     print "done!"
     return output
+
+
+# DISCONNECT - Revoke a current user's token and reset their login_session
+@app.route('/gdisconnect')
+def gdisconnect():
+
+    access_token = login_session.get('access_token')
+    if access_token is None:
+        print 'Access Token is None'
+        response = make_response(json.dumps('Current user not connected.'), 401)
+        response.headers['Content-Type'] = 'application/json'
+        return response
+
+    print 'In gdisconnect access token is %s', access_token
+    print 'User name is: '
+    print login_session['username']
+    url = 'https://accounts.google.com/o/oauth2/revoke?token=%s' % login_session['access_token']
+    h = httplib2.Http()
+    result = h.request(url, 'GET')[0]
+    print 'result is '
+    print result
+
+    if result['status'] == '200':
+        del login_session['access_token']
+        del login_session['gplus_id']
+        del login_session['username']
+        del login_session['email']
+        del login_session['picture']
+        response = make_response(json.dumps('Successfully disconnected.'), 200)
+        response.headers['Content-Type'] = 'application/json'
+        return response
+    else:
+        response = make_response(json.dumps('Failed to revoke token for given user.', 400))
+        response.headers['Content-Type'] = 'application/json'
+        return response
+
+
 # JSON APIs to view Restaurant Information
 
 @app.route('/city/<int:city_id>/place/JSON')
@@ -195,7 +232,7 @@ def newPlace(city_id):
 		newPlace = Place(name=request.form['name'], description=request.form['description'], city_id=city_id, user_id=city.user_id)
 		session.add(newPlace)
 		session.commit()
-		return redirect(url_for('showPlace', city_id=city_id))
+		return redirect(url_for('showPlaces', city_id=city_id))
 	else:
 		return render_template('newPlace.html', city_id=city_id)
 
