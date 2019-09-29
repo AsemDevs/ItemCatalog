@@ -187,6 +187,9 @@ def showCities():
 
 @app.route('/city/new', methods=['GET', 'POST'])
 def newCity():
+	if 'username' not in login_session:
+		return redirect('/login')
+
 	if request.method == 'POST':
 		newCity = City(name=request.form['name'])
 		session.add(newCity)
@@ -197,6 +200,9 @@ def newCity():
 
 @app.route('/city/<int:city_id>/edit', methods=['GET', 'POST'])
 def editCity(city_id):
+	if 'username' not in login_session:
+		return redirect('/login')
+
 	editedCity = session.query(City).filter_by(id=city_id).one()
 	if request.method == 'POST':
 		if request.form['name']:
@@ -210,6 +216,9 @@ def editCity(city_id):
 
 @app.route('/city/<int:city_id>/delete', methods=['GET', 'POST'])
 def deleteCity(city_id):
+	if 'username' not in login_session:
+		return redirect('/login')
+        
 	deletedCity = session.query(City).filter_by(id=city_id).one()
 	if request.method == 'POST':
 		session.delete(deletedCity)
