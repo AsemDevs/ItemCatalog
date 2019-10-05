@@ -164,7 +164,7 @@ def gdisconnect():
         return response
 
 
-# JSON APIs to view Restaurant Information
+# JSON APIs to view Places Information
 
 @app.route('/city/<int:city_id>/place/JSON')
 def showPlacesJSON(city_id):
