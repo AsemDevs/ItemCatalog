@@ -1,4 +1,7 @@
-from flask import Flask, render_template, request, redirect, jsonify, url_for, flash
+#!/usr/bin/env python3
+
+from flask import Flask, render_template
+from flask import request, redirect, jsonify, url_for, flash
 from sqlalchemy import create_engine, asc
 from sqlalchemy.orm import sessionmaker
 from database_setup import User, City, Place
@@ -18,12 +21,12 @@ CLIENT_ID = json.loads(
     open('client_secrets.json', 'r').read())['web']['client_id']
 APPLICATION_NAME = "Cities & Places"
 
-
 # Connect to Database and create database session
 engine = create_engine('sqlite:///citiescatalog.db')
 
 DBSession = sessionmaker(bind=engine)
 session = DBSession()
+
 
 # Create anti-forgery state token
 @app.route('/login')
@@ -37,7 +40,6 @@ def showLogin():
 
 @app.route('/gconnect', methods=['POST'])
 def gconnect():
-
     # Validate state token
 
     if request.args.get('state') != login_session['state']:
@@ -86,14 +88,14 @@ def gconnect():
     if result['issued_to'] != CLIENT_ID:
         response = make_response(
             json.dumps("Token's client ID does not match app's."), 401)
-        print "Token's client ID does not match app's."
+        print ("Token's client ID does not match app's.")
         response.headers['Content-Type'] = 'application/json'
         return response
 
     stored_access_token = login_session.get('access_token')
     stored_gplus_id = login_session.get('gplus_id')
     if stored_access_token is not None and gplus_id == stored_gplus_id:
-        response = make_response(json.dumps('Current user is already connected.'),
+        response = make_response(json.dumps('User is already connected.'),
                                  200)
         response.headers['Content-Type'] = 'application/json'
         return response
@@ -118,31 +120,33 @@ def gconnect():
     output += '!</h1>'
     output += '<img src="'
     output += login_session['picture']
-    output += ' " style = "width: 300px; height: 300px;border-radius: 150px;-webkit-border-radius: 150px;-moz-border-radius: 150px;"> '
+    output += '''"style = "width: 300px; height: 300px;border-radius: 150px;
+    -webkit-border-radius: 150px;-moz-border-radius: 150px;">'''
     flash("you are now logged in as %s" % login_session['username'])
-    print "done!"
+    print ("done!")
     return output
 
 
 # DISCONNECT - Revoke a current user's token and reset their login_session
 @app.route('/gdisconnect')
 def gdisconnect():
-
     access_token = login_session.get('access_token')
     if access_token is None:
-        print 'Access Token is None'
-        response = make_response(json.dumps('Current user not connected.'), 401)
+        print ('Access Token is None')
+        ncmsg = 'Current user not connected.'
+        response = make_response(json.dumps(ncmsg), 401)
         response.headers['Content-Type'] = 'application/json'
         return response
 
-    print 'In gdisconnect access token is %s', access_token
-    print 'User name is: '
-    print login_session['username']
-    url = 'https://accounts.google.com/o/oauth2/revoke?token=%s' % login_session['access_token']
+    print ('In gdisconnect access token is %s', access_token)
+    print ('User name is: ')
+    print (login_session['username'])
+    url = '''https://accounts.google.com/o/oauth2/revoke?
+    token=%s''' % login_session['access_token']
     h = httplib2.Http()
     result = h.request(url, 'GET')[0]
-    print 'result is '
-    print result
+    print ('result is ')
+    print (result)
 
     if result['status'] == '200':
         del login_session['access_token']
@@ -154,7 +158,8 @@ def gdisconnect():
         response.headers['Content-Type'] = 'application/json'
         return response
     else:
-        response = make_response(json.dumps('Failed to revoke token for given user.', 400))
+        frmsg = 'Failed to revoke token for user.'
+        response = make_response(json.dumps(frmsg, 400))
         response.headers['Content-Type'] = 'application/json'
         return response
 
@@ -168,10 +173,12 @@ def showPlacesJSON(city_id):
         city_id=city_id).all()
     return jsonify(places=[i.serialize for i in places])
 
+
 @app.route('/city/<int:city_id>/place/<int:place_id>/JSON')
 def PlaceJSON(city_id, place_id):
     place = session.query(Place).filter_by(id=place_id).one()
     return jsonify(place=place.serialize)
+
 
 @app.route('/city/JSON')
 def showCitiesJSON():
@@ -182,97 +189,111 @@ def showCitiesJSON():
 @app.route('/')
 @app.route('/cities')
 def showCities():
-	cities = session.query(City).all()
-	return render_template('cities.html', cities=cities)
+    cities = session.query(City).all()
+    return render_template('cities.html', cities=cities)
+
 
 @app.route('/city/new', methods=['GET', 'POST'])
 def newCity():
-	if 'username' not in login_session:
-		return redirect('/login')
+    if 'username' not in login_session:
+        return redirect('/login')
 
-	if request.method == 'POST':
-		newCity = City(name=request.form['name'])
-		session.add(newCity)
-		session.commit()
-		return redirect(url_for('showCities'))
-	else:
-		return render_template('newCity.html')
+    if request.method == 'POST':
+        newCity = City(name=request.form['name'])
+        session.add(newCity)
+        session.commit()
+        return redirect(url_for('showCities'))
+    else:
+        return render_template('newCity.html')
+
 
 @app.route('/city/<int:city_id>/edit', methods=['GET', 'POST'])
 def editCity(city_id):
-	if 'username' not in login_session:
-		return redirect('/login')
+    if 'username' not in login_session:
+        return redirect('/login')
 
-	editedCity = session.query(City).filter_by(id=city_id).one()
-	if request.method == 'POST':
-		if request.form['name']:
-			editedCity.name = request.form['name']
-			session.add(editedCity)
-			session.commit()
-			return redirect(url_for('showCities'))
-	else:
-		return render_template('editCity.html', city=editedCity)
+    editedCity = session.query(City).filter_by(id=city_id).one()
+    if request.method == 'POST':
+        if request.form['name']:
+            editedCity.name = request.form['name']
+            session.add(editedCity)
+            session.commit()
+            return redirect(url_for('showCities'))
+    else:
+        return render_template('editCity.html', city=editedCity)
 
 
 @app.route('/city/<int:city_id>/delete', methods=['GET', 'POST'])
 def deleteCity(city_id):
-	if 'username' not in login_session:
-		return redirect('/login')
-        
-	deletedCity = session.query(City).filter_by(id=city_id).one()
-	if request.method == 'POST':
-		session.delete(deletedCity)
-		session.commit()
-		return redirect(url_for('showCities', city_id=city_id))
-	else:
-		return render_template('deleteCity.html', city=deletedCity)
+    if 'username' not in login_session:
+        return redirect('/login')
+
+    deletedCity = session.query(City).filter_by(id=city_id).one()
+    if request.method == 'POST':
+        session.delete(deletedCity)
+        session.commit()
+        return redirect(url_for('showCities', city_id=city_id))
+    else:
+        return render_template('deleteCity.html', city=deletedCity)
+
 
 @app.route('/city/<int:city_id>/')
 @app.route('/city/<int:city_id>/places')
 def showPlaces(city_id):
-	city = session.query(City).filter_by(id=city_id).one()
-	places = session.query(Place).filter_by(city_id=city_id).all()
-	return render_template('places.html', places=places, city=city,city_id=city_id)
+    city = session.query(City).filter_by(id=city_id).one()
+    places = session.query(Place).filter_by(city_id=city_id).all()
+    return render_template('places.html', places=places, city=city,
+                           city_id=city_id)
+
 
 @app.route('/city/<int:city_id>/place/new', methods=['GET', 'POST'])
 def newPlace(city_id):
-	city = session.query(City).filter_by(id=city_id).one()
-	if request.method == 'POST':
-		newPlace = Place(name=request.form['name'], description=request.form['description'], city_id=city_id, user_id=city.user_id)
-		session.add(newPlace)
-		session.commit()
-		return redirect(url_for('showPlaces', city_id=city_id))
-	else:
-		return render_template('newPlace.html', city_id=city_id)
+    city = session.query(City).filter_by(id=city_id).one()
+    if request.method == 'POST':
+        newPlace = Place(name=request.form['name'],
+                         description=request.form['description'],
+                         city_id=city_id,
+                         user_id=city.user_id)
+        session.add(newPlace)
+        session.commit()
+        return redirect(url_for('showPlaces', city_id=city_id))
+    else:
+        return render_template('newPlace.html', city_id=city_id)
+
 
 @app.route('/city/<int:city_id>/<int:place_id>/edit', methods=['GET', 'POST'])
 def eidtPlace(city_id, place_id):
-	editedCity = session.query(City).filter_by(id=city_id).one()
-	editedPlace = session.query(Place).filter_by(id=place_id).one()
-	if request.method == 'POST':
-		if request.form['name']:
-			editedPlace.name = request.form['name']
-		if request.form['description']:
-			editedPlace.description = request.form['description']
-		session.add(editedPlace)
-		session.commit()
-		return redirect(url_for('showCities'))
-	else:
-		return render_template('editPlace.html', city_id=city_id, place_id = place_id, place=editedPlace)
+    editedCity = session.query(City).filter_by(id=city_id).one()
+    editedPlace = session.query(Place).filter_by(id=place_id).one()
+    if request.method == 'POST':
+        if request.form['name']:
+            editedPlace.name = request.form['name']
+        if request.form['description']:
+            editedPlace.description = request.form['description']
+        session.add(editedPlace)
+        session.commit()
+        return redirect(url_for('showCities'))
+    else:
+        return render_template('editPlace.html', city_id=city_id,
+                               place_id=place_id, place=editedPlace)
 
-@app.route('/city/<int:city_id>/<int:place_id>/delete', methods=['GET', 'POST'])
+
+@app.route('/city/<int:city_id>/<int:place_id>/delete',
+           methods=['GET', 'POST'])
 def deletePlace(city_id, place_id):
-	city = session.query(City).filter_by(id=city_id).one()
-	deletedPlace = session.query(Place).filter_by(id=place_id).one()
-	if request.method == 'POST':
-		session.delete(deletedPlace)
-		session.commit()
-		return redirect(url_for('showCities', city_id=city_id))
-	else:
-		return render_template('deletePlace.html', city_id=city_id, place_id = place_id, place = deletedPlace )
+    city = session.query(City).filter_by(id=city_id).one()
+    deletedPlace = session.query(Place).filter_by(id=place_id).one()
+    if request.method == 'POST':
+        session.delete(deletedPlace)
+        session.commit()
+        return redirect(url_for('showCities', city_id=city_id))
+    else:
+        return render_template('deletePlace.html',
+                               city_id=city_id, place_id=place_id,
+                               place=deletedPlace)
 
 
 if __name__ == '__main__':
-	app.secret_key = 'super_secret_key'
-	app.debug = True
-	app.run(host='0.0.0.0', port=7000)
+    app.secret_key = 'super_secret_key'
+    app.debug = True
+    app.run(host='0.0.0.0', port=7000)
