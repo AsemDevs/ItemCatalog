@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 from sqlalchemy import Column, ForeignKey, Integer, String
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
@@ -58,5 +60,4 @@ class Place(Base):
 
 
 engine = create_engine('sqlite:///citiescatalog.db')
-
 Base.metadata.create_all(engine)

@@ -4,7 +4,7 @@ from flask import Flask, render_template
 from flask import request, redirect, jsonify, url_for, flash
 from sqlalchemy import create_engine, asc
 from sqlalchemy.orm import sessionmaker
-from database_setup import User, City, Place
+from database_setup import User, City, Place, Base
 from flask import session as login_session
 import random
 import string
@@ -32,7 +32,7 @@ session = DBSession()
 @app.route('/login')
 def showLogin():
     state = ''.join(random.choice(string.ascii_uppercase + string.digits)
-                    for x in xrange(32))
+                    for x in range(32))
     login_session['state'] = state
     # return "The current session state is %s" % login_session['state']
     return render_template('login.html', STATE=state)
@@ -126,6 +126,28 @@ def gconnect():
     print ("done!")
     return output
 
+#Authorization (Local permission system)
+def createUser(login_session):
+    newUser = User(name=login_session['username'], email=login_session[
+                   'email'], picture=login_session['picture'])
+    session.add(newUser)
+    session.commit()
+    user = session.query(User).filter_by(email=login_session['email']).one()
+    return user.id
+
+
+def getUserInfo(user_id):
+    user = session.query(User).filter_by(id=user_id).one()
+    return user
+
+
+def getUserID(email):
+    try:
+        user = session.query(User).filter_by(email=email).one()
+        return user.id
+    except:
+        return None
+
 
 # DISCONNECT - Revoke a current user's token and reset their login_session
 @app.route('/gdisconnect')
@@ -159,7 +181,7 @@ def gdisconnect():
         return response
     else:
         frmsg = 'Failed to revoke token for user.'
-        response = make_response(json.dumps(frmsg, 400))
+        response = make_response(json.dumps(frmsg), 400)
         response.headers['Content-Type'] = 'application/json'
         return response
 
@@ -168,7 +190,6 @@ def gdisconnect():
 
 @app.route('/city/<int:city_id>/place/JSON')
 def showPlacesJSON(city_id):
-    city = session.query(City).filter_by(id=city_id).one()
     places = session.query(Place).filter_by(
         city_id=city_id).all()
     return jsonify(places=[i.serialize for i in places])
@@ -185,7 +206,7 @@ def showCitiesJSON():
     city = session.query(City).all()
     return jsonify(city=[c.serialize for c in city])
 
-
+#All the routes
 @app.route('/')
 @app.route('/cities')
 def showCities():
@@ -199,7 +220,7 @@ def newCity():
         return redirect('/login')
 
     if request.method == 'POST':
-        newCity = City(name=request.form['name'])
+        newCity = City(name=request.form['name'],  user_id=login_session['user_id'])
         session.add(newCity)
         session.commit()
         return redirect(url_for('showCities'))
@@ -248,6 +269,9 @@ def showPlaces(city_id):
 
 @app.route('/city/<int:city_id>/place/new', methods=['GET', 'POST'])
 def newPlace(city_id):
+    if 'username' not in login_session:
+        return redirect('/login')
+
     city = session.query(City).filter_by(id=city_id).one()
     if request.method == 'POST':
         newPlace = Place(name=request.form['name'],
@@ -263,7 +287,9 @@ def newPlace(city_id):
 
 @app.route('/city/<int:city_id>/<int:place_id>/edit', methods=['GET', 'POST'])
 def eidtPlace(city_id, place_id):
-    editedCity = session.query(City).filter_by(id=city_id).one()
+    if 'username' not in login_session:
+        return redirect('/login')
+
     editedPlace = session.query(Place).filter_by(id=place_id).one()
     if request.method == 'POST':
         if request.form['name']:
@@ -281,7 +307,9 @@ def eidtPlace(city_id, place_id):
 @app.route('/city/<int:city_id>/<int:place_id>/delete',
            methods=['GET', 'POST'])
 def deletePlace(city_id, place_id):
-    city = session.query(City).filter_by(id=city_id).one()
+    if 'username' not in login_session:
+        return redirect('/login')
+
     deletedPlace = session.query(Place).filter_by(id=place_id).one()
     if request.method == 'POST':
         session.delete(deletedPlace)
