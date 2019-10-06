@@ -65,7 +65,7 @@ This application provides a list of items within a variety of categories as well
     python3 application.py
 ```
 
-15.Open `http://localhost:5000/` in your favourite Web browser, and enjoy.
+15.Open `http://localhost:7000/` in your favourite Web browser, and enjoy.
 
 ## Debugging
 

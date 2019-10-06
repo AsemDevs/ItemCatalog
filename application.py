@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 from flask import Flask, render_template
-from flask import request, redirect, jsonify, url_for, flash
+from flask import request, redirect, jsonify, url_for
 from sqlalchemy import create_engine, asc
 from sqlalchemy.orm import sessionmaker
 from database_setup import User, City, Place, Base
@@ -114,6 +114,11 @@ def gconnect():
     login_session['picture'] = data['picture']
     login_session['email'] = data['email']
 
+    user_id = getUserID(login_session['email'])
+    if not user_id:
+        user_id = createUser(login_session)
+    login_session['user_id'] = user_id
+
     output = ''
     output += '<h1>Welcome, '
     output += login_session['username']
@@ -122,14 +127,14 @@ def gconnect():
     output += login_session['picture']
     output += '''"style = "width: 300px; height: 300px;border-radius: 150px;
     -webkit-border-radius: 150px;-moz-border-radius: 150px;">'''
-    flash("you are now logged in as %s" % login_session['username'])
     print ("done!")
     return output
 
-#Authorization (Local permission system)
+
+# Authorization (Local permission system)
 def createUser(login_session):
     newUser = User(name=login_session['username'], email=login_session[
-                   'email'], picture=login_session['picture'])
+        'email'], picture=login_session['picture'])
     session.add(newUser)
     session.commit()
     user = session.query(User).filter_by(email=login_session['email']).one()
@@ -145,7 +150,7 @@ def getUserID(email):
     try:
         user = session.query(User).filter_by(email=email).one()
         return user.id
-    except:
+    except IndexError:
         return None
 
 
@@ -176,6 +181,7 @@ def gdisconnect():
         del login_session['username']
         del login_session['email']
         del login_session['picture']
+
         response = make_response(json.dumps('Successfully disconnected.'), 200)
         response.headers['Content-Type'] = 'application/json'
         return response
@@ -190,6 +196,7 @@ def gdisconnect():
 
 @app.route('/city/<int:city_id>/place/JSON')
 def showPlacesJSON(city_id):
+    city = session.query(City).filter_by(id=city_id).one()
     places = session.query(Place).filter_by(
         city_id=city_id).all()
     return jsonify(places=[i.serialize for i in places])
@@ -206,7 +213,8 @@ def showCitiesJSON():
     city = session.query(City).all()
     return jsonify(city=[c.serialize for c in city])
 
-#All the routes
+
+# All the routes
 @app.route('/')
 @app.route('/cities')
 def showCities():
@@ -220,7 +228,8 @@ def newCity():
         return redirect('/login')
 
     if request.method == 'POST':
-        newCity = City(name=request.form['name'],  user_id=login_session['user_id'])
+        newCity = City(name=request.form['name'],
+                       user_id=login_session['user_id'])
         session.add(newCity)
         session.commit()
         return redirect(url_for('showCities'))
@@ -262,16 +271,22 @@ def deleteCity(city_id):
 @app.route('/city/<int:city_id>/places')
 def showPlaces(city_id):
     city = session.query(City).filter_by(id=city_id).one()
+    creator = getUserInfo(city.user_id)
     places = session.query(Place).filter_by(city_id=city_id).all()
-    return render_template('places.html', places=places, city=city,
-                           city_id=city_id)
+    u_id = 'user_id'
+    if 'username' not in login_session or creator.id != login_session[u_id]:
+        return render_template('publicplaces.html', places=places,
+                               city=city, creator=creator)
+    else:
+        return render_template('places.html', places=places, city=city,
+                               city_id=city_id, creator=creator)
 
 
 @app.route('/city/<int:city_id>/place/new', methods=['GET', 'POST'])
 def newPlace(city_id):
     if 'username' not in login_session:
         return redirect('/login')
-
+    editedCity = session.query(City).filter_by(id=city_id).one()
     city = session.query(City).filter_by(id=city_id).one()
     if request.method == 'POST':
         newPlace = Place(name=request.form['name'],
@@ -289,7 +304,7 @@ def newPlace(city_id):
 def eidtPlace(city_id, place_id):
     if 'username' not in login_session:
         return redirect('/login')
-
+    city = session.query(City).filter_by(id=city_id).one()
     editedPlace = session.query(Place).filter_by(id=place_id).one()
     if request.method == 'POST':
         if request.form['name']:
