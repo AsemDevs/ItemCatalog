@@ -130,7 +130,8 @@ def gconnect():
     print ("done!")
     return output
 
-#Authorization (Local permission system)
+
+# Authorization (Local permission system)
 def createUser(login_session):
     newUser = User(name=login_session['username'], email=login_session[
                    'email'], picture=login_session['picture'])
@@ -149,7 +150,7 @@ def getUserID(email):
     try:
         user = session.query(User).filter_by(email=email).one()
         return user.id
-    except:
+    except IndentationError:
         return None
 
 
