@@ -32,7 +32,7 @@ session = DBSession()
 @app.route('/login')
 def showLogin():
     state = ''.join(random.choice(string.ascii_uppercase + string.digits)
-                    for x in range(32))
+                    for x in xrange(32))
     login_session['state'] = state
     # return "The current session state is %s" % login_session['state']
     return render_template('login.html', STATE=state)
@@ -114,11 +114,6 @@ def gconnect():
     login_session['picture'] = data['picture']
     login_session['email'] = data['email']
 
-    user_id = getUserID(login_session['email'])
-    if not user_id:
-        user_id = createUser(login_session)
-    login_session['user_id'] = user_id
-
     output = ''
     output += '<h1>Welcome, '
     output += login_session['username']
@@ -130,11 +125,10 @@ def gconnect():
     print ("done!")
     return output
 
-
-# Authorization (Local permission system)
+#Authorization (Local permission system)
 def createUser(login_session):
     newUser = User(name=login_session['username'], email=login_session[
-        'email'], picture=login_session['picture'])
+                   'email'], picture=login_session['picture'])
     session.add(newUser)
     session.commit()
     user = session.query(User).filter_by(email=login_session['email']).one()
@@ -150,13 +144,14 @@ def getUserID(email):
     try:
         user = session.query(User).filter_by(email=email).one()
         return user.id
-    except IndexError:
+    except:
         return None
 
 
 # DISCONNECT - Revoke a current user's token and reset their login_session
 @app.route('/gdisconnect')
 def gdisconnect():
+    """Revoke a current user's token and reset their login session."""
     # Only disconnect a connected user.
     access_token = login_session.get('access_token')
     if access_token is None:
@@ -180,7 +175,7 @@ def gdisconnect():
         response.headers['Content-Type'] = 'application/json'
         return response
     else:
-        # For whatever reason, the given token was invalid.
+        # If the given token was invalid notice the user.
         response = make_response(
             json.dumps('Failed to revoke token for given user.', 400))
         response.headers['Content-Type'] = 'application/json'
