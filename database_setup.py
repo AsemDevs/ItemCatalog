@@ -43,7 +43,7 @@ class Place(Base):
     name = Column(String(80), nullable=False)
     description = Column(String(250))
     city_id = Column(Integer, ForeignKey('city.id'))
-    city = relationship(City)
+    city = relationship(City, single_parent=True)
     user_id = Column(Integer, ForeignKey('user.id'))
     user = relationship(User)
 
