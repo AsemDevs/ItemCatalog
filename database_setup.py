@@ -7,6 +7,7 @@ from sqlalchemy import create_engine
 
 Base = declarative_base()
 
+
 class User(Base):
     __tablename__ = 'user'
 
@@ -25,9 +26,7 @@ class City(Base):
     user = relationship(User)
 
     @property
-
     def serialize(self):
-
         """Return object data in easily serializeable format"""
 
         return {
@@ -48,8 +47,6 @@ class Place(Base):
     user = relationship(User)
 
     @property
-
-
     def serialize(self):
         """Return object data in easily serializeable format"""
         return {

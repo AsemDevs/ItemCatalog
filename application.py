@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 from flask import Flask, render_template
-from flask import request, redirect, jsonify, url_for,flash
+from flask import request, redirect, jsonify, url_for, flash
 from sqlalchemy import create_engine, asc
 from sqlalchemy.orm import sessionmaker
 from database_setup import User, City, Place, Base
@@ -134,7 +134,7 @@ def gconnect():
 # Authorization (Local permission system)
 def createUser(login_session):
     newUser = User(name=login_session['username'], email=login_session[
-                   'email'], picture=login_session['picture'])
+        'email'], picture=login_session['picture'])
     session.add(newUser)
     session.commit()
     user = session.query(User).filter_by(email=login_session['email']).one()
@@ -235,10 +235,9 @@ def newCity():
 
 @app.route('/city/<int:city_id>/edit', methods=['GET', 'POST'])
 def editCity(city_id):
-
     if 'username' not in login_session:
         return redirect('/login')
-        
+
     editedCity = session.query(City).filter_by(id=city_id).one()
     if editedCity.user_id != login_session['user_id']:
         return render_template('authorize.html')
@@ -262,7 +261,7 @@ def deleteCity(city_id):
 
     if deletedCity.user_id != login_session['user_id']:
         return render_template('authorize.html')
-                    
+
     if request.method == 'POST':
         session.delete(deletedCity)
         session.commit()
@@ -337,7 +336,7 @@ def deletePlace(city_id, place_id):
 
     if deletedPlace.user_id != login_session['user_id']:
         return render_template('authorize.html')
-    
+
     if request.method == 'POST':
         session.delete(deletedPlace)
         session.commit()
