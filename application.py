@@ -22,7 +22,7 @@ CLIENT_ID = json.loads(
 APPLICATION_NAME = "Cities & Places"
 
 # Connect to Database and create database session
-engine = create_engine('sqlite:///citiescatalog.db')
+engine = create_engine('postgresql://catalog:password@localhost/catalog')
 
 DBSession = sessionmaker(bind=engine)
 session = DBSession()
