@@ -14,6 +14,7 @@ import httplib2
 import json
 from flask import make_response
 import requests
+import psycopg2
 
 app = Flask(__name__)
 
